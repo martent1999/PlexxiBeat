@@ -15,13 +15,13 @@
 
 # PlexxiBeat.py version 0.1 - Marten Terpstra
 #
-# PlexxiBeat is a Perl script that acts as a Plexxi Control client, retrieves specific information from the Plexxi Control instance,
-# and inserts it into an Elastic Search database. ES tools like Kibana can then be used to visualize this information.
+# PlexxiBeat is a Python script that acts as a Plexxi Control client, retrieves specific information from the
+# Plexxi Control instance, and inserts it into an Elastic Search database.
+# ES tools like Kibana can then be used to visualize this information.
 
 from __future__ import print_function
-import re, sys, os, time
+import sys, time
 import json
-import subprocess
 from subprocess import Popen, PIPE
 import argparse
 
@@ -92,6 +92,7 @@ def pushToElasticSearch(jsonObject):
     if (push):
         if (debug):
             print("debug: pushing data to:", eshost, "using username", esuser, "and password", espassword)
+            print("debug: data - ", jsonObject)
         esurl = 'http://' + args.eshost + ':9200/plexxi-beat/external?pretty'
         esuserpass = args.esuser + ':' + args.espassword
         p= Popen([
@@ -194,14 +195,14 @@ if __name__ == '__main__':
   args = parser.parse_args()
 
   if (args.debug):
-    print('host =', args.host)
-    print('user =', args.user)
-    print('password =', args.password)
-    print('debug =', args.debug)
-    print('push =', args.push)
-    print('eshost = ', args.eshost)
-    print('esuser = ', args.esuser)
-    print('espassword = ', args.espassword)
+      print('debug: host =', args.host)
+      print('debug: user =', args.user)
+      print('debug: password =', args.password)
+      print('debug: debug =', args.debug)
+      print('debug: push =', args.push)
+      print('debug: eshost = ', args.eshost)
+      print('debug: esuser = ', args.esuser)
+      print('debug: espassword = ', args.espassword)
 
 # construct the URL co connect to Plexxi Control and create a Session
 
@@ -215,7 +216,7 @@ if __name__ == '__main__':
       fabric = getFabricInfo(i)
 
       if (args.debug):
-          print(fabric)
+          print("debug: collecting info for fabric:", fabric)
 
       rc = pushToElasticSearch(fabric)
 
@@ -226,7 +227,7 @@ if __name__ == '__main__':
       switch = getSwitchInfo(sw)
 
       if (args.debug):
-          print(switch)
+          print("debug: collecting info for switch:", switch)
 
       rc = pushToElasticSearch(switch)
 
