@@ -71,15 +71,14 @@ def getSwitchPeers(switch):
 		print("debug2: ", time.strftime("%H:%M:%S"))
 	totalFabricPorts = 0
 	totalPeerPorts = 0
-	peerList = []
 	for port in outports:
-		if debug > 1:
-			print("debug: port = ", port)
+		if args.debug > 1:
+			print("debug2: port = ", port)
 		if not port.isAccessPort():
 			totalFabricPorts = totalFabricPorts + 1
 			peerPorts = port.getAllPeerSwitchPorts()
-			if debug > 1:
-				print("debug: peerPorts = ", peerPorts)
+			if args.debug > 1:
+				print("debug2: peerPorts = ", peerPorts)
 			totalPeerPorts = totalPeerPorts + len(peerPorts)
 	return (totalPeerPorts, totalFabricPorts)
 
