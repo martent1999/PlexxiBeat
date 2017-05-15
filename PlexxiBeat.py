@@ -153,10 +153,10 @@ def getSwitchInfo(plexxiSwitch):
 	switch['type'] = "plexxi-switch"
 	switch['@timestamp'] = time.strftime("%Y-%m-%dT%H:%M:%S%z")
 	switch['name'] = plexxiSwitch.getName()
-	switch['status'] = plexxiSwitch.getStatus()
-	switch['hwrev'] = plexxiSwitch.getPlexxiHwRevision()
+	switch['status'] = plexxiSwitch.getStatus().value
+	switch['hwrev'] = plexxiSwitch.getPlexxiHwRevision().value
 	switch['ip-address'] = str(plexxiSwitch.getIpAddress())
-	switch['productcode'] = plexxiSwitch.getProductCode()
+	switch['productcode'] = plexxiSwitch.getProductCode().value
 	switch['lightrail'] = plexxiSwitch.getLightrailCount()
 	switch['fabric'] = str(plexxiSwitch.getPlexxiRing())
 	if args.debug > 1:
@@ -175,7 +175,7 @@ def getSwitchInfo(plexxiSwitch):
 	if args.debug > 1:
 		print("debug2: ", time.strftime("%H:%M:%S"))
 	switch['software'] = str(plexxiSwitch.getSwitchSoftwareVersion())
-	switch['oper-status'] = str(plexxiSwitch.getOperationalStage())
+	switch['oper-status'] = str(plexxiSwitch.getOperationalStage().value)
 	switch['control'] = args.host
 
 	return (switch)
