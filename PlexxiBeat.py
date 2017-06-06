@@ -27,16 +27,17 @@ import argparse
 
 # Command line options exist to override all of these
 debug = 1
+debugtime = 1
 host = 'plx-control-a1-1.ilab.plexxi.com'
 user = 'admin'
 password = 'plexxi'
-push = 1
+push = 0
 curl = '/usr/bin/curl'
 esuser = 'plexxi'
 espassword = 'plexxi'
 eshost = 'elastic5.ilab.plexxi.com'
 
-# make sure 2.7 site packegs can be included
+# make sure 2.7 site packages can be included
 sys.path.append('/opt/rh/python27/root/usr/lib/python2.7/site-packages')
 
 # These are the Plexxi Control packages, it assumes this runs on a server/VM that has these bindings installed
@@ -61,18 +62,18 @@ def getSwitchPeers(switch):
 	This gives a complete map of switch uplink port to port connectivity through the Ring
 	"""
 
-	if args.debug > 1:
-		print("debug2: ", time.strftime("%H:%M:%S"))
+	if args.debugtime:
+		print("time: getSwitchPeers-1", time.strftime("%H:%M:%S"))
 	fabric = switch.getAllSwitchFabrics()[0]
-	if args.debug > 1:
-		print("debug2: ", time.strftime("%H:%M:%S"))
+	if args.debugtime:
+		print("time: getSwitchPeers-2", time.strftime("%H:%M:%S"))
 	outports = fabric.getAllSwitchFabricOutPorts()
-	if args.debug > 1:
-		print("debug2: ", time.strftime("%H:%M:%S"))
+	if args.debugtime:
+		print("time: time getSwitchPeers-3", time.strftime("%H:%M:%S"))
 	totalFabricPorts = 0
 	totalPeerPorts = 0
 	for port in outports:
-		if args.debug > 1:
+		if args.debug > 2:
 			print("debug2: port = ", port)
 		if not port.isAccessPort():
 			totalFabricPorts = totalFabricPorts + 1
@@ -80,6 +81,8 @@ def getSwitchPeers(switch):
 			if args.debug > 1:
 				print("debug2: peerPorts = ", peerPorts)
 			totalPeerPorts = totalPeerPorts + len(peerPorts)
+	if args.debug > 1:
+		print("debug2: time getSwitchPeers-5", time.strftime("%H:%M:%S"))
 	return (totalPeerPorts, totalFabricPorts)
 
 
@@ -127,6 +130,8 @@ def getFabricInfo(plexxiFabric):
 	return a JSON object with the data collected
 	"""
 
+	if args.debugtime:
+		print("time: getFabricInfo-1", time.strftime("%H:%M:%S"))
 	fabric = {}
 	fabric['fabric'] = plexxiFabric.getName()
 	fabric['whole'] = plexxiFabric.isWhole()
@@ -138,6 +143,8 @@ def getFabricInfo(plexxiFabric):
 	fabric['type'] = "plexxi-fabric"
 	fabric['@timestamp'] = time.strftime("%Y-%m-%dT%H:%M:%S%z")
 	fabric['control'] = args.host
+	if args.debugtime:
+		print("time: getFabricInfo-2", time.strftime("%H:%M:%S"))
 	return (fabric)
 
 
@@ -147,9 +154,9 @@ def getSwitchInfo(plexxiSwitch):
 	return a JSON object with the data collected
 	"""
 
+	if args.debugtime:
+		print("time: getSwitchInfo-1", time.strftime("%H:%M:%S"))
 	switch = {}
-	if args.debug > 1:
-		print("debug2: ", time.strftime("%H:%M:%S"))
 	switch['type'] = "plexxi-switch"
 	switch['@timestamp'] = time.strftime("%Y-%m-%dT%H:%M:%S%z")
 	switch['name'] = plexxiSwitch.getName()
@@ -159,24 +166,25 @@ def getSwitchInfo(plexxiSwitch):
 	switch['productcode'] = plexxiSwitch.getProductCode().value
 	switch['lightrail'] = plexxiSwitch.getLightrailCount()
 	switch['fabric'] = str(plexxiSwitch.getPlexxiRing())
-	if args.debug > 1:
-		print("debug2: ", time.strftime("%H:%M:%S"))
+	if args.debugtime:
+		print("time: getSwitchInfo-2", time.strftime("%H:%M:%S"))
 	cpustats = plexxiSwitch.showStatisticsLast(switchStatisticsType='CPU', format='CSV').split(",")
 	switch['cpu'] = {'1m': float(cpustats[10]), '5m': float(cpustats[11]), '10m': float(cpustats[12])}
 	memstats = plexxiSwitch.showStatisticsLast(switchStatisticsType='MEMORY', format='CSV').split(",")
 	switch['memory'] = {'free': int(memstats[9]), 'total': int(memstats[10])}
 	tempstats = plexxiSwitch.showStatisticsLast(switchStatisticsType='TEMPERATURE', format='CSV').split(",")
 	switch['temp'] = {'cpu': float(tempstats[12]), 'fan': float(tempstats[14]), 'power': float(tempstats[15])}
-	if args.debug > 1:
-		print("debug2: ", time.strftime("%H:%M:%S"))
 	(totalPeers, totalFabricPorts) = getSwitchPeers(plexxiSwitch)
+	if args.debugtime:
+		print("time: getSwitchInfo-3", time.strftime("%H:%M:%S"))
 	switch['peers'] = {'count': int(totalPeers)}
 	switch['fabricports'] = int(totalFabricPorts)
-	if args.debug > 1:
-		print("debug2: ", time.strftime("%H:%M:%S"))
 	switch['software'] = str(plexxiSwitch.getSwitchSoftwareVersion())
 	switch['oper-status'] = str(plexxiSwitch.getOperationalStage().value)
 	switch['control'] = args.host
+
+	if args.debugtime:
+		print("time: getSwitchInfo-2", time.strftime("%H:%M:%S"))
 
 	return (switch)
 
@@ -197,6 +205,7 @@ if __name__ == '__main__':
 	parser.add_argument('--espassword', help='ElasticSearch password', default=espassword)
 	parser.add_argument('--eshost', help='ElasticSearch host name', default=eshost)
 	parser.add_argument('--debug', type=int, help='enable debug printing', default=debug)
+	parser.add_argument('--debugtime', type=int, help="enable timing output printing", default=debugtime)
 
 	args = parser.parse_args()
 
