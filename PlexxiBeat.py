@@ -26,12 +26,12 @@ from subprocess import Popen, PIPE
 import argparse
 
 # Command line options exist to override all of these
-debug = 1
-debugtime = 1
+debug = 0
+debugtime = 0
 host = 'plx-control-a1-1.ilab.plexxi.com'
 user = 'admin'
 password = 'plexxi'
-push = 0
+push = 1
 curl = '/usr/bin/curl'
 esuser = 'plexxi'
 espassword = 'plexxi'
@@ -99,7 +99,10 @@ def pushToElasticSearch(jsonObject):
 	if (push):
 		if (debug):
 			print("debug: pushing data to:", eshost, "using username", esuser, "and password", espassword)
-		esurl = 'http://' + args.eshost + ':9200/plexxi-beat/external?pretty'
+
+		# Create index name that looks like this: plexxi-beat-YYYY.MM-dd
+		index = 'plexxi-beat-' + time.strftime("%Y.%m-%d")
+		esurl = 'http://' + args.eshost + ':9200/' + index + '/external?pretty'
 		esuserpass = args.esuser + ':' + args.espassword
 		p = Popen([
 			args.curl,
